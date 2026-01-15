@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 경제활동인구조사 직업분류 도우미
 
-## Getting Started
+경제활동인구조사 직업분류 과정에서 활용하기 위한 
+웹 기반 검색 도우미입니다.  
+제8차 한국표준직업분류(KSCO) 이용 지침에 수록된 문장형 분류 규칙을 기준으로,  
+유사 사례와 판단 기준을 빠르게 조회할 수 있도록 구현했습니다.
 
-First, run the development server:
+본 프로젝트는 직업분류를 자동으로 결정하는 도구가 아니라,  
+조사원이 분류 기준을 참고하고 판단의 일관성을 유지할 수 있도록 
+보조하는 것을 목적으로 합니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 기획 배경
+
+경제활동인구조사 직업분류 과정에서는 다음과 같은 어려움이 반복적으로 발생합니다.
+
+- 유사 사례 탐색에 시간이 소요됨
+- 조사원별 판단 기준 편차 발생
+- 신규 조사원의 학습 부담 증가
+
+본 도구는 이러한 문제를 완화하기 위해
+직업분류 규칙을 검색 중심으로 정리하고,
+조사원이 빠르게 참고할 수 있는 형태로 제공하는 것을 목표로 제작되었습니다.
+
+또 실제 조사 환경에서의 활용을 고려하여,
+기능 단순성과 유지보수성을 우선으로 설계되었습니다.
+
+## 주요 기능
+
+- 직업분류 규칙에 대한 키워드 기반 검색 기능
+- 검색 결과 건수 표시
+- 키워드 매칭 정도를 고려한 결과 우선순위 정렬
+- 최상위 적합 결과(Top match) 강조 표시
+- 분류 판단에 활용된 핵심 키워드 시각화
+- 검색어 하이라이트 처리
+- 검색 결과가 없는 경우 안내 메시지 제공
+
+## 기술 스택
+
+- Framework: Next.js (App Router)
+- Language: TypeScript
+- Styling: Tailwind CSS
+- Data Handling:
+  - Excel 파일 기반 직업분류 규칙 관리
+  - 검색 성능을 고려한 JSON 전처리
+- Deployment: Vercel
+
+## 프로젝트 구조
+
+```text
+job-classification-helper/
+├─ app/                  # Next.js App Router
+├─ data/
+│  ├─ rules.xlsx         # 직업분류 규칙 원본 (관리용)
+│  └─ rules.json         # 검색용 전처리 데이터
+├─ scripts/
+│  └─ excel-to-json.ts   # Excel → JSON 변환 스크립트
+├─ README.md
+└─ package.json
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 데이터 처리 방식
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+직업분류 규칙은 Excel 파일로 관리합니다.  
+프론트엔드에서는 직접 Excel을 읽지 않고, 사전에 JSON으로 변환한 데이터를 
+정적 리소스로 사용합니다.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+이와 같은 구조를 선택한 이유는 다음과 같습니다.
 
-## Learn More
+- 검색 속도 및 안정성 확보
+- 배포 환경(Vercel)에서의 파일 접근 단순화
+- 규칙 데이터와 UI 로직 간 역할 분리
 
-To learn more about Next.js, take a look at the following resources:
+Excel 파일 수정 후 아래 스크립트를 실행하면
+검색에 사용되는 JSON 데이터가 갱신됩니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx ts-node scripts/excel-to-json.ts
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 로컬 실행 방법
 
-## Deploy on Vercel
+```bash
+npm install
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+브라우저에서 http://localhost:3000에 접속한 뒤,
+키워드를 입력하면 직업분류 규칙 검색 결과를 확인할 수 있습니다.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 배포
+
+본 프로젝트는 GitHub 저장소와 연동된 Vercel 환경에 배포되어 있습니다.
+저장소에 커밋이 발생하면 자동으로 빌드 및 배포가 수행됩니다.
+
+Deployment: https://job-classification-helper.vercel.app
